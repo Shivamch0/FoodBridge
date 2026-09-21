@@ -1,4 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { authApi } from "./api/client";
+import { LandingPage } from "./pages/LandingPage";
+import { LoginPage } from "./pages/LoginPage";
+import { SignupPage } from "./pages/SignupPage";
 import {
   ArrowUpRight,
   Bell,
@@ -130,7 +134,7 @@ const deliveries = [
   },
 ];
 
-function App() {
+export function DashboardPage({ user, onLogout }) {
   const [activePage, setActivePage] = useState("overview");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showDonationForm, setShowDonationForm] = useState(false);
@@ -150,6 +154,8 @@ function App() {
         setActivePage={setActivePage}
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
+        user={user}
+        onLogout={onLogout}
       />
       <main className="min-h-screen lg:pl-[268px]">
         <Topbar role={role} setRole={setRole} setMobileOpen={setMobileOpen} />
@@ -193,7 +199,14 @@ function App() {
   );
 }
 
-function Sidebar({ activePage, setActivePage, mobileOpen, setMobileOpen }) {
+function Sidebar({
+  activePage,
+  setActivePage,
+  mobileOpen,
+  setMobileOpen,
+  user,
+  onLogout,
+}) {
   return (
     <>
       <aside
@@ -254,15 +267,22 @@ function Sidebar({ activePage, setActivePage, mobileOpen, setMobileOpen }) {
             Settings
           </button>
           <div className="mt-5 flex items-center gap-3 border-t border-[#e4e6de] px-2 pt-5">
-            <div className="avatar bg-[#f2be62] text-[#513d1d]">AS</div>
+            <div className="avatar bg-[#f2be62] text-[#513d1d]">
+              {user?.username?.slice(0, 2).toUpperCase() || "AS"}
+            </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-bold">Anika Sharma</p>
-              <p className="truncate text-xs text-[#718080]">
-                Cedar & Grain Bakery
+              <p className="truncate text-sm font-bold">
+                {user?.username || "FoodBridge user"}
+              </p>
+              <p className="truncate text-xs capitalize text-[#718080]">
+                {user?.role || "donor"} workspace
               </p>
             </div>
             <ChevronDown size={15} className="ml-auto text-[#718080]" />
           </div>
+          <button className="nav-item mt-2 text-[#b96650]" onClick={onLogout}>
+            Sign out
+          </button>
         </div>
       </aside>
       {mobileOpen && (
@@ -927,6 +947,98 @@ function CommunityStat({ icon: Icon, number, label, text }) {
       <p className="mt-1 font-bold">{label}</p>
       <p className="mt-3 text-sm leading-5 text-[#718080]">{text}</p>
     </div>
+  );
+}
+
+function App() {
+  const [screen, setScreen] = useState("loading");
+  const [user, setUser] = useState(null);
+  const [authError, setAuthError] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+
+  useEffect(() => {
+    authApi
+      .me()
+      .then((payload) => {
+        setUser(payload.data);
+        setScreen("dashboard");
+      })
+      .catch(() => setScreen("landing"));
+  }, []);
+
+  const authenticate = async (operation, values) => {
+    setAuthLoading(true);
+    setAuthError("");
+    try {
+      const payload = await operation(values);
+      setUser(payload.data);
+      setScreen("dashboard");
+    } catch (error) {
+      setAuthError(error.message);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  if (screen === "loading")
+    return (
+      <div className="app-loading">
+        <span className="brand-mark">
+          <HandHeart size={21} />
+        </span>
+        <span>Loading your bridge...</span>
+      </div>
+    );
+  if (screen === "landing")
+    return (
+      <LandingPage
+        onLogin={() => {
+          setAuthError("");
+          setScreen("login");
+        }}
+        onSignup={() => {
+          setAuthError("");
+          setScreen("signup");
+        }}
+      />
+    );
+  if (screen === "login")
+    return (
+      <LoginPage
+        onLogin={{
+          submit: (values) => authenticate(authApi.login, values),
+          error: authError,
+          loading: authLoading,
+        }}
+        onSignup={() => {
+          setAuthError("");
+          setScreen("signup");
+        }}
+      />
+    );
+  if (screen === "signup")
+    return (
+      <SignupPage
+        onSignup={{
+          submit: (values) => authenticate(authApi.register, values),
+          error: authError,
+          loading: authLoading,
+        }}
+        onLogin={() => {
+          setAuthError("");
+          setScreen("login");
+        }}
+      />
+    );
+  return (
+    <DashboardPage
+      user={user}
+      onLogout={async () => {
+        await authApi.logout().catch(() => {});
+        setUser(null);
+        setScreen("landing");
+      }}
+    />
   );
 }
 
