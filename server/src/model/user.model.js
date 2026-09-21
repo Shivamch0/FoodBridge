@@ -19,6 +19,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+      select: false,
     },
     phoneNumber: {
       type: String,
@@ -55,7 +56,7 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
     transportDetails: {
-      vechileType: {
+      vehicleType: {
         type : String
       },
       capacity: {
@@ -87,8 +88,12 @@ const userSchema = new mongoose.Schema(
         default: "Point",
       },
       coordinates: {
-        type : [Number],
-        default : [ 0 , 0 ]
+        type: [Number],
+        required: true,
+        validate: {
+          validator: (coordinates) => coordinates.length === 2,
+          message: "Location coordinates must contain longitude and latitude",
+        },
       },
     },
 

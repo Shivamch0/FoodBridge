@@ -2,7 +2,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import jwt from "jsonwebtoken";
-import { User } from "../models/user.model.js";
+import { User } from "../model/user.model.js";
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {
   try {
@@ -19,9 +19,7 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
       throw new ApiError(401, "Invalid token. Please log in again.");
     }
 
-    const user = await User.findById(decoded?._id).select(
-      "-password -refreshToken"
-    );
+    const user = await User.findById(decoded?._id).select("-password");
 
     if (!user) {
       throw new ApiError(401, "Invalid access token: user not found...");
@@ -45,3 +43,10 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
     throw new ApiError(401, "Unauthorized. Please log in.");
   }
 });
+
+export const authorizeRoles = (...roles) => (req, res, next) => {
+  if (!req.user || !roles.includes(req.user.role)) {
+    throw new ApiError(403, "You do not have permission to perform this action");
+  }
+  next();
+};
