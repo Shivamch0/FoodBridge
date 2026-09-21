@@ -1,0 +1,26 @@
+services:
+  mongo:
+    image: mongo:8
+    restart: unless-stopped
+    volumes:
+      - foodbridge-mongo:/data/db
+    ports:
+      - "27017:27017"
+
+  server:
+    build: ./server
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    env_file:
+      - ./server/.env
+    environment:
+      MONGO_URI: mongodb://mongo:27017/foodbridge
+    ports:
+      - "4000:4000"
+    volumes:
+      - foodbridge-uploads:/app/uploads
+
+volumes:
+  foodbridge-mongo:
+  foodbridge-uploads:
