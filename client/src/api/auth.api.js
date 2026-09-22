@@ -27,4 +27,9 @@ const getCurrentUser = async () => {
   return res.data;
 };
 
-export { registerUser, loginUser, logoutUser, refreshToken, getCurrentUser };
+const updateCurrentUser = async (data) => {
+  const res = await api.patch('/auth/me', data);
+  return res.data;
+};
+
+export { registerUser, loginUser, logoutUser, refreshToken, getCurrentUser, updateCurrentUser };

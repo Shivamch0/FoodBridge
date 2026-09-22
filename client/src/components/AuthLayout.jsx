@@ -28,7 +28,7 @@ export function AuthLayout({
               <Users size={17} />
             </span>
             <div>
-              <strong>1,248 meals</strong>
+              <strong>Local food support</strong>
               <span>redirected by the network this month</span>
             </div>
             <ArrowUpRight size={17} />

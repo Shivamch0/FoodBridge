@@ -65,6 +65,14 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
 	res.status(200).json(new ApiResponse(200, req.user, "Current user fetched successfully"));
 });
 
+export const updateCurrentUser = asyncHandler(async (req, res) => {
+	const allowedFields = ["username", "phoneNumber", "organizationType", "organizationName", "hasTransport", "transportDetails", "address", "location", "isAvailable"];
+	const updates = Object.fromEntries(Object.entries(req.body).filter(([field]) => allowedFields.includes(field)));
+	const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true, runValidators: true }).select("-password");
+	if (!user) throw new ApiError(404, "User not found");
+	res.status(200).json(new ApiResponse(200, user, "Profile updated successfully"));
+});
+
 export const refreshAccessToken = asyncHandler(async (req, res) => {
 	const token = req.cookies?.refreshToken;
 	if (!token) throw new ApiError(401, "Refresh token is required");

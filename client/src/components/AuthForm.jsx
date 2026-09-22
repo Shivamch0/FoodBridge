@@ -10,6 +10,8 @@ import { useState } from "react";
 
 export function AuthForm({ mode, onSubmit, error, loading }) {
   const [showPassword, setShowPassword] = useState(false);
+  const [locationError, setLocationError] = useState("");
+  const [locationLoading, setLocationLoading] = useState(false);
   const isSignup = mode === "signup";
   const [form, setForm] = useState({
     username: "",
@@ -26,14 +28,51 @@ export function AuthForm({ mode, onSubmit, error, loading }) {
       [event.target.name]: event.target.value,
     }));
 
+  const getLocation = () =>
+    new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error("Location is not supported by this browser."));
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) =>
+          resolve({
+            type: "Point",
+            coordinates: [coords.longitude, coords.latitude],
+          }),
+        () =>
+          reject(
+            new Error(
+              "Location permission is required to create your account.",
+            ),
+          ),
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 },
+      );
+    });
+
+  const submit = async (event) => {
+    event.preventDefault();
+    setLocationError("");
+
+    if (!isSignup) {
+      onSubmit(form);
+      return;
+    }
+
+    setLocationLoading(true);
+    try {
+      const location = await getLocation();
+      await onSubmit({ ...form, location });
+    } catch (submitError) {
+      setLocationError(submitError.message);
+    } finally {
+      setLocationLoading(false);
+    }
+  };
+
   return (
-    <form
-      className="mt-8 space-y-4"
-      onSubmit={(event) => {
-        event.preventDefault();
-        onSubmit(form);
-      }}
-    >
+    <form className="mt-8 space-y-4" onSubmit={submit}>
       {isSignup && (
         <Field label="Your name" icon={UserRound}>
           <input
@@ -141,8 +180,15 @@ export function AuthForm({ mode, onSubmit, error, loading }) {
           {error}
         </p>
       )}
-      <button className="auth-submit" disabled={loading}>
-        {loading ? <LoaderCircle className="animate-spin" size={17} /> : null}
+      {locationError && (
+        <p className="auth-error" role="alert">
+          {locationError}
+        </p>
+      )}
+      <button className="auth-submit" disabled={loading || locationLoading}>
+        {loading || locationLoading ? (
+          <LoaderCircle className="animate-spin" size={17} />
+        ) : null}
         {isSignup ? "Create my account" : "Sign in to FoodBridge"}
       </button>
       {!isSignup && (

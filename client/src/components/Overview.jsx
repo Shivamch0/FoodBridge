@@ -8,13 +8,27 @@ import {
   Truck,
   Users,
 } from "lucide-react";
-import { donationRows } from "./dashboardData";
+import { donationToRow } from "./dashboardData";
 import { Metric } from "./Metric";
 import { SectionHeader } from "./SectionHeader";
 import { DonationRow } from "./DonationRow";
 import { ActionCard } from "./ActionCard";
 
-export function Overview({ setActivePage, setShowDonationForm }) {
+export function Overview({
+  setActivePage,
+  setShowDonationForm,
+  donations,
+  deliveryRequests,
+  loading,
+}) {
+  const activeDonations = donations.filter(
+    (donation) =>
+      !["cancelled", "expired", "completed"].includes(donation.status),
+  );
+  const mealsShared = donations.reduce(
+    (total, donation) => total + Number(donation.quantity || 0),
+    0,
+  );
   return (
     <div className="space-y-6 animate-rise">
       <section className="hero-panel">
@@ -26,9 +40,8 @@ export function Overview({ setActivePage, setShowDonationForm }) {
             Every meal finds a way forward.
           </h2>
           <p className="mt-5 max-w-md text-sm leading-6 text-[#c1d1cb]">
-            You have helped redirect{" "}
-            <strong className="text-white">1,248 meals</strong> this month. The
-            local network is moving quickly today.
+            Your food donations help connect surplus with nearby organizations.
+            The local network is moving quickly today.
           </p>
           <button
             className="button-light mt-7"
@@ -54,30 +67,30 @@ export function Overview({ setActivePage, setShowDonationForm }) {
       </section>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Metric
-          label="Meals redirected"
-          value="1,248"
-          change="+18.6%"
+          label="Total donations"
+          value={donations.length}
+          change="From your account"
           icon={HandHeart}
           tone="yellow"
         />
         <Metric
-          label="Active matches"
-          value="08"
-          change="03 need action"
+          label="Active donations"
+          value={activeDonations.length}
+          change="Current status"
           icon={Compass}
           tone="mint"
         />
         <Metric
-          label="Success rate"
-          value="94.2%"
-          change="Last 30 days"
+          label="Meals shared"
+          value={mealsShared}
+          change="Across all donations"
           icon={ShieldCheck}
           tone="blue"
         />
         <Metric
-          label="Network reach"
-          value="12.4 km"
-          change="Across 18 partners"
+          label="Delivery requests"
+          value={deliveryRequests.length}
+          change="From the network"
           icon={MapPin}
           tone="coral"
         />
@@ -90,9 +103,18 @@ export function Overview({ setActivePage, setShowDonationForm }) {
           onClick={() => setActivePage("donations")}
         />
         <div className="mt-5 space-y-1">
-          {donationRows.slice(0, 3).map((row) => (
-            <DonationRow key={row.name} row={row} />
-          ))}
+          {loading && (
+            <p className="p-2 text-sm text-[#718080]">Loading donations...</p>
+          )}
+          {!loading && donations.length === 0 && (
+            <p className="p-2 text-sm text-[#718080]">No donations found.</p>
+          )}
+          {!loading &&
+            donations
+              .slice(0, 3)
+              .map((donation) => (
+                <DonationRow key={donation._id} row={donationToRow(donation)} />
+              ))}
         </div>
       </section>
       <section className="panel">
@@ -101,27 +123,24 @@ export function Overview({ setActivePage, setShowDonationForm }) {
           title="A little help goes a long way"
         />
         <div className="mt-5 grid gap-3 md:grid-cols-3">
-          <ActionCard
-            icon={Truck}
-            title="1 pickup needs a volunteer"
-            text="Conference lunch boxes · 2:00 PM"
-            action="Find a volunteer"
-            tone="coral"
-          />
-          <ActionCard
-            icon={Compass}
-            title="2 donations expire soon"
-            text="Review before the 6 hour window closes"
-            action="Review timing"
-            tone="yellow"
-          />
-          <ActionCard
-            icon={Users}
-            title="Welcome a new partner"
-            text="3 organizations are nearby today"
-            action="Explore network"
-            tone="mint"
-          />
+          {deliveryRequests.length === 0 && (
+            <p className="text-sm text-[#718080]">
+              No delivery requests found.
+            </p>
+          )}
+          {deliveryRequests.slice(0, 3).map((request) => (
+            <ActionCard
+              key={request._id}
+              icon={Truck}
+              title={`Delivery request: ${request.status || "pending"}`}
+              text={
+                request.donation?.foodName ||
+                "A donation needs delivery coordination."
+              }
+              action="Open deliveries"
+              tone="coral"
+            />
+          ))}
         </div>
       </section>
     </div>

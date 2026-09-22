@@ -1,6 +1,70 @@
 import { Check, MapPin, X } from "lucide-react";
+import { useState } from "react";
+import { createDonation } from "../api/donation.api.js";
 
-export function DonationModal({ onClose }) {
+export function DonationModal({ onClose, onCreated }) {
+  const [form, setForm] = useState({
+    foodName: "",
+    foodType: "",
+    description: "",
+    quantity: "",
+    unit: "Meals",
+    preparedAt: "",
+    expiresAt: "",
+    pickupLocation: "",
+  });
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const update = (event) =>
+    setForm((current) => ({
+      ...current,
+      [event.target.name]: event.target.value,
+    }));
+
+  const submit = async (event) => {
+    event.preventDefault();
+    setSaving(true);
+    setError("");
+    try {
+      if (!navigator.geolocation)
+        throw new Error("Location is not supported by this browser.");
+      const position = await new Promise((resolve, reject) =>
+        navigator.geolocation.getCurrentPosition(
+          resolve,
+          () =>
+            reject(
+              new Error(
+                "Location permission is required to create a donation.",
+              ),
+            ),
+          { enableHighAccuracy: true, timeout: 10000 },
+        ),
+      );
+      await createDonation({
+        ...form,
+        quantity: Number(form.quantity),
+        preparedAt: new Date(form.preparedAt).toISOString(),
+        expiresAt: new Date(form.expiresAt).toISOString(),
+        pickupLocation: {
+          type: "Point",
+          coordinates: [position.coords.longitude, position.coords.latitude],
+        },
+        deliveryPreference: "organization_or_volunteer",
+      });
+      await onCreated?.();
+      onClose();
+    } catch (submitError) {
+      setError(
+        submitError.response?.data?.message ||
+          submitError.message ||
+          "Unable to create donation.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="modal-backdrop">
       <div className="modal-card animate-rise">
@@ -22,50 +86,122 @@ export function DonationModal({ onClose }) {
             <X size={18} />
           </button>
         </div>
-        <div className="mt-7 grid gap-4 sm:grid-cols-2">
+        <form className="mt-7 grid gap-4 sm:grid-cols-2" onSubmit={submit}>
           <label className="field-label sm:col-span-2">
             Food name
             <input
               className="field"
+              name="foodName"
+              value={form.foodName}
+              onChange={update}
               placeholder="e.g. Conference lunch boxes"
+              required
+            />
+          </label>
+          <label className="field-label">
+            Food type
+            <input
+              className="field"
+              name="foodType"
+              value={form.foodType}
+              onChange={update}
+              placeholder="Prepared meals"
+              required
+            />
+          </label>
+          <label className="field-label sm:col-span-2">
+            Description
+            <textarea
+              className="field min-h-20 resize-y"
+              name="description"
+              value={form.description}
+              onChange={update}
+              placeholder="Add details about the food, packaging, or serving instructions"
+              rows="3"
             />
           </label>
           <label className="field-label">
             Quantity
-            <input className="field" placeholder="120" />
+            <input
+              className="field"
+              name="quantity"
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={form.quantity}
+              onChange={update}
+              placeholder="120"
+              required
+            />
           </label>
           <label className="field-label">
             Unit
-            <select className="field">
+            <select
+              className="field"
+              name="unit"
+              value={form.unit}
+              onChange={update}
+            >
               <option>Meals</option>
               <option>Kg</option>
               <option>Crates</option>
             </select>
           </label>
           <label className="field-label">
-            Pickup date
-            <input className="field" type="date" />
+            Prepared at
+            <input
+              className="field"
+              name="preparedAt"
+              type="datetime-local"
+              value={form.preparedAt}
+              onChange={update}
+              required
+            />
           </label>
           <label className="field-label">
-            Pickup time
-            <input className="field" type="time" />
+            Expires at
+            <input
+              className="field"
+              name="expiresAt"
+              type="datetime-local"
+              value={form.expiresAt}
+              onChange={update}
+              required
+            />
           </label>
           <label className="field-label sm:col-span-2">
-            Pickup location
+            Pickup location (current device location)
             <div className="relative">
               <MapPin className="field-icon" size={17} />
-              <input className="field pl-10" placeholder="Search an address" />
+              <input
+                className="field pl-10"
+                name="pickupLocation"
+                value={form.pickupLocation}
+                onChange={update}
+                placeholder="Location label"
+              />
             </div>
           </label>
-        </div>
-        <div className="mt-7 flex justify-end gap-3">
-          <button className="button-quiet" onClick={onClose}>
-            Cancel
-          </button>
-          <button className="button-primary" onClick={onClose}>
-            <Check size={16} /> Create donation
-          </button>
-        </div>
+          {error && (
+            <p className="auth-error sm:col-span-2" role="alert">
+              {error}
+            </p>
+          )}
+          <div className="mt-7 flex justify-end gap-3 sm:col-span-2">
+            <button type="button" className="button-quiet" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="button-primary" disabled={saving}>
+              {saving ? (
+                "Creating..."
+              ) : (
+                <>
+                  <Check size={16} /> Create donation
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

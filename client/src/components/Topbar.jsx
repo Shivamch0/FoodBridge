@@ -1,6 +1,6 @@
-import { Bell, ChevronDown, Menu, Search } from "lucide-react";
+import { Bell, Menu, Search } from "lucide-react";
 
-export function Topbar({ role, setRole, setMobileOpen }) {
+export function Topbar({ role, setMobileOpen }) {
   return (
     <header className="sticky top-0 z-20 flex h-[76px] items-center justify-between border-b border-[#e0e3da]/80 bg-[#f5f2ea]/90 px-5 backdrop-blur-md sm:px-8 lg:px-10">
       <div className="flex items-center gap-3">
@@ -26,20 +26,7 @@ export function Topbar({ role, setRole, setMobileOpen }) {
           <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#d97757]" />
         </button>
         <div className="hidden h-7 w-px bg-[#dfe3d8] sm:block" />
-        <button
-          className="role-switch"
-          onClick={() =>
-            setRole(
-              role === "Donor workspace"
-                ? "Organization workspace"
-                : "Donor workspace",
-            )
-          }
-        >
-          <span className="hidden sm:inline">{role}</span>
-          <span className="sm:hidden">Donor</span>
-          <ChevronDown size={14} />
-        </button>
+        <span className="role-switch"><span className="hidden sm:inline">{role}</span><span className="sm:hidden">{role.split(" ")[0]}</span></span>
       </div>
     </header>
   );

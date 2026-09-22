@@ -47,15 +47,14 @@ export function LandingPage({ onLogin, onSignup }) {
           </div>
           <div className="landing-trust">
             <div className="avatar-stack">
-              <span>AS</span>
-              <span>MK</span>
-              <span>RP</span>
-              <span>+1k</span>
+              <span><Users size={14} /></span>
+              <span><HandHeart size={14} /></span>
+              <span><Truck size={14} /></span>
             </div>
             <p>
-              <strong>1,248 meals</strong> redirected this month
+              <strong>Join the local network</strong>
               <br />
-              <span>by donors, organizations, and volunteers</span>
+              <span>with donors, organizations, and volunteers</span>
             </p>
           </div>
         </div>
@@ -70,21 +69,21 @@ export function LandingPage({ onLogin, onSignup }) {
                 <HandHeart size={25} />
               </span>
               <div>
-                <strong>84 prepared meals</strong>
-                <span>Harvest table surplus</span>
+                <strong>Food donation</strong>
+                <span>Ready to find a nearby match</span>
               </div>
             </div>
             <div className="visual-route">
               <div className="route-point">
                 <span>Donor</span>
-                <b>Nehru Hall</b>
+                <b>Donor location</b>
               </div>
               <div className="route-line">
-                <span>2.4 km</span>
+                <span>Nearby</span>
               </div>
               <div className="route-point align-right">
                 <span>Organization</span>
-                <b>Asha Kitchen</b>
+                <b>Organization</b>
               </div>
             </div>
             <div className="visual-footer">
@@ -99,33 +98,33 @@ export function LandingPage({ onLogin, onSignup }) {
               <Truck size={17} />
             </span>
             <div>
-              <strong>Maya is on the way</strong>
-              <span>Pickup in 12 minutes</span>
+              <strong>Volunteer coordination</strong>
+              <span>Pickup details shared securely</span>
             </div>
             <span className="online-dot" />
           </div>
           <div className="floating-card floating-impact">
-            <span className="impact-number">4.8k</span>
+            <span className="impact-number">Live</span>
             <span>
-              meals redirected
+              matching support
               <br />
-              across the city
+              for local food
             </span>
           </div>
         </div>
       </section>
       <section className="landing-strip" id="impact">
         <div>
-          <span className="strip-number">18</span>
-          <span>verified organizations</span>
+          <span className="strip-number">Live</span>
+          <span>shared network</span>
         </div>
         <div>
-          <span className="strip-number">64</span>
-          <span>active volunteers</span>
+          <span className="strip-number">Open</span>
+          <span>clear donation path</span>
         </div>
         <div>
-          <span className="strip-number">94%</span>
-          <span>successful deliveries</span>
+          <span className="strip-number">Local</span>
+          <span>coordinated delivery</span>
         </div>
         <div className="strip-note">
           <ShieldCheck size={19} /> Built around trust, timing, and local
