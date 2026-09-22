@@ -5,6 +5,7 @@ import { createDeliveryRequest } from "../api/deliveryRequest.api.js";
 export function OrganizationDashboard({
   donations,
   requests,
+  notifications = [],
   loading,
   onRefresh,
 }) {
@@ -34,6 +35,24 @@ export function OrganizationDashboard({
   const requested = new Set(
     requests.map((request) => request.donation?._id || request.donation),
   );
+  const notifiedDonations = notifications
+    .map((notification) => notification.donation)
+    .filter(
+      (donation) =>
+        donation &&
+        ["available", "searching", "temporarily_reserved"].includes(
+          donation.status || "searching",
+        ),
+    );
+  const donationIds = new Set(
+    donations.map((donation) => String(donation._id)),
+  );
+  const visibleDonations = [
+    ...donations,
+    ...notifiedDonations.filter(
+      (donation) => !donationIds.has(String(donation._id)),
+    ),
+  ];
   return (
     <div className="animate-rise space-y-6">
       <section className="match-banner">
@@ -65,12 +84,12 @@ export function OrganizationDashboard({
               Loading available donations...
             </p>
           )}
-          {!loading && donations.length === 0 && (
+          {!loading && visibleDonations.length === 0 && (
             <p className="text-sm text-[#718080]">
               No donations are currently available.
             </p>
           )}
-          {donations.map((donation) => (
+          {visibleDonations.map((donation) => (
             <article key={donation._id} className="match-card">
               <div className="min-w-0 flex-1">
                 <p className="font-bold">{donation.foodName}</p>

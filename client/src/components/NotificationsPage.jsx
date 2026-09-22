@@ -1,4 +1,5 @@
-import { Bell, Check } from "lucide-react";
+import { Bell, Check, MapPin, X } from "lucide-react";
+import { useState } from "react";
 import { markNotificationRead } from "../api/notification.api.js";
 import { LocationName } from "./LocationName";
 import {
@@ -13,6 +14,7 @@ export function NotificationsPage({
   role,
   loading,
 }) {
+  const [selectedDonation, setSelectedDonation] = useState(null);
   const read = async (notification) => {
     if (notification.readAt) return;
     await markNotificationRead(notification._id);
@@ -56,6 +58,14 @@ export function NotificationsPage({
                 <span className="block text-sm font-bold">
                   {notification.message}
                 </span>
+                {notification.donation && (
+                  <button
+                    className="mt-2 text-xs font-bold text-[#315d53]"
+                    onClick={() => setSelectedDonation(notification.donation)}
+                  >
+                    View donation details
+                  </button>
+                )}
                 <span className="mt-1 block text-xs text-[#718080]">
                   {new Date(notification.createdAt).toLocaleString()}
                 </span>
@@ -123,6 +133,68 @@ export function NotificationsPage({
           ))}
         </div>
       </section>
+      {selectedDonation && (
+        <div className="modal-backdrop">
+          <div className="modal-card animate-rise">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="eyebrow">Donation details</p>
+                <h2 className="mt-2 font-display text-3xl tracking-[-0.04em]">
+                  {selectedDonation.foodName}
+                </h2>
+              </div>
+              <button
+                className="icon-button"
+                onClick={() => setSelectedDonation(null)}
+                aria-label="Close donation details"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="mt-6 grid gap-3 text-sm text-[#536363]">
+              <p>
+                <strong>Food type:</strong> {selectedDonation.foodType}
+              </p>
+              <p>
+                <strong>Quantity:</strong> {selectedDonation.quantity}{" "}
+                {selectedDonation.unit}
+              </p>
+              <p>
+                <strong>Expires:</strong>{" "}
+                {new Date(selectedDonation.expiresAt).toLocaleString()}
+              </p>
+              {selectedDonation.description && (
+                <p>
+                  <strong>Description:</strong> {selectedDonation.description}
+                </p>
+              )}
+              {selectedDonation.pickupLocation?.coordinates && (
+                <p>
+                  <MapPin size={15} className="mr-1 inline" />
+                  <strong>Pickup:</strong>{" "}
+                  <LocationName
+                    coordinates={selectedDonation.pickupLocation.coordinates}
+                  />
+                </p>
+              )}
+              {selectedDonation.donor && (
+                <p>
+                  <strong>Donor:</strong> {selectedDonation.donor.username} ·{" "}
+                  {selectedDonation.donor.phoneNumber || "Contact available"}
+                </p>
+              )}
+            </div>
+            <div className="mt-7 flex justify-end">
+              <button
+                className="button-quiet"
+                onClick={() => setSelectedDonation(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -124,6 +124,7 @@ export function DashboardPage({ user, onLogout }) {
               <OrganizationDashboard
                 donations={dashboardData.donations}
                 requests={dashboardData.deliveryRequests}
+                notifications={dashboardData.notifications}
                 loading={dataLoading}
                 onRefresh={loadDashboardData}
               />
