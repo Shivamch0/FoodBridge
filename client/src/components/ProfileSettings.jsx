@@ -198,17 +198,6 @@ export function ProfileSettings({ user, onUpdated }) {
                   />{" "}
                   I have transport
                 </label>
-                {user?.role === "volunteer" && (
-                  <label className="flex items-center gap-2 text-sm font-semibold">
-                    <input
-                      type="checkbox"
-                      name="isAvailable"
-                      checked={form.isAvailable}
-                      onChange={update}
-                    />{" "}
-                    Available for deliveries
-                  </label>
-                )}
               </div>
               {form.hasTransport && (
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">

@@ -4,6 +4,7 @@ import { listDeliveries } from "../api/delivery.api.js";
 import { listDeliveryRequests } from "../api/deliveryRequest.api.js";
 import { listDonations } from "../api/donation.api.js";
 import { listNotifications } from "../api/notification.api.js";
+import { updateCurrentUser } from "../api/auth.api.js";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { Overview } from "./Overview";
@@ -78,6 +79,12 @@ export function DashboardPage({ user, onLogout }) {
     notifications: "Notifications",
     settings: "Profile settings",
   }[activePage];
+  const updateAvailability = async () => {
+    const response = await updateCurrentUser({
+      isAvailable: !currentUser?.isAvailable,
+    });
+    setCurrentUser(response.data);
+  };
   return (
     <div className="min-h-screen bg-[#f5f2ea] text-[#172629]">
       <Sidebar
@@ -124,6 +131,9 @@ export function DashboardPage({ user, onLogout }) {
             <VolunteerDashboard
               donations={dashboardData.donations}
               requests={dashboardData.deliveryRequests}
+              notifications={dashboardData.notifications}
+              isAvailable={Boolean(currentUser?.isAvailable)}
+              onAvailabilityChange={updateAvailability}
               loading={dataLoading}
               onRefresh={loadDashboardData}
             />
@@ -163,6 +173,8 @@ export function DashboardPage({ user, onLogout }) {
           {activePage === "notifications" && (
             <NotificationsPage
               notifications={dashboardData.notifications}
+              role={currentUser?.role}
+              onRefresh={loadDashboardData}
               loading={dataLoading}
               onRead={(id) =>
                 setDashboardData((current) => ({

@@ -41,12 +41,18 @@ export const listDonations = asyncHandler(async (req, res) => {
     req.user.role === "donor"
       ? { donor: req.user._id }
       : { status: { $in: ["available", "searching", "temporarily_reserved"] } };
-  if (req.user.role !== "donor" && req.user.location?.coordinates?.length === 2) {
+  if (
+    req.user.role !== "donor" &&
+    req.user.location?.coordinates?.length === 2
+  ) {
     const maxDistanceKm = Number(req.query.maxDistanceKm || 20);
     filter.pickupLocation = {
       $near: {
         $geometry: req.user.location,
-        $maxDistance: (Number.isFinite(maxDistanceKm) && maxDistanceKm > 0 ? maxDistanceKm : 20) * 1000,
+        $maxDistance:
+          (Number.isFinite(maxDistanceKm) && maxDistanceKm > 0
+            ? maxDistanceKm
+            : 20) * 1000,
       },
     };
   }

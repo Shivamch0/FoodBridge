@@ -234,6 +234,36 @@ export const acceptVolunteerRequest = asyncHandler(async (req, res) => {
     );
 });
 
+export const rejectVolunteerRequest = asyncHandler(async (req, res) => {
+  const request = await DeliveryRequest.findOneAndUpdate(
+    {
+      _id: req.params.id,
+      status: "pending",
+      requesterType: "organization",
+      expiresAt: { $gt: new Date() },
+    },
+    { status: "rejected" },
+    { new: true },
+  );
+  if (!request) throw new ApiError(409, "Delivery request is missing or expired");
+
+  await FoodDonation.findOneAndUpdate(
+    {
+      _id: request.donation,
+      status: "temporarily_reserved",
+      "currentReservation.organization": request.requester,
+    },
+    { status: "searching", $unset: { currentReservation: 1 } },
+  );
+  await createNotifications([request.requester], {
+    type: "reservation_expired",
+    message: "The volunteer declined this delivery request. Please choose another volunteer.",
+    donation: request.donation,
+    request: request._id,
+  });
+  res.status(200).json(new ApiResponse(200, request, "Delivery request rejected"));
+});
+
 export const expireDeliveryRequest = asyncHandler(async (req, res) => {
   const existingRequest = await DeliveryRequest.findById(req.params.id).select(
     "requester",

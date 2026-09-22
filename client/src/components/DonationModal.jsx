@@ -1,4 +1,4 @@
-import { Check, MapPin, X } from "lucide-react";
+import { Check, HandHeart, MapPin, Truck, X } from "lucide-react";
 import { useState } from "react";
 import { createDonation } from "../api/donation.api.js";
 
@@ -12,6 +12,7 @@ export function DonationModal({ onClose, onCreated }) {
     preparedAt: "",
     expiresAt: "",
     pickupLocation: "",
+    deliveryPreference: "organization_or_volunteer",
   });
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -50,7 +51,6 @@ export function DonationModal({ onClose, onCreated }) {
           type: "Point",
           coordinates: [position.coords.longitude, position.coords.latitude],
         },
-        deliveryPreference: "organization_or_volunteer",
       });
       await onCreated?.();
       onClose();
@@ -86,7 +86,10 @@ export function DonationModal({ onClose, onCreated }) {
             <X size={18} />
           </button>
         </div>
-        <form className="mt-7 grid gap-4 sm:grid-cols-2" onSubmit={submit}>
+        <form
+          className="modal-form mt-7 grid gap-4 sm:grid-cols-2"
+          onSubmit={submit}
+        >
           <label className="field-label sm:col-span-2">
             Food name
             <input
@@ -182,6 +185,49 @@ export function DonationModal({ onClose, onCreated }) {
               />
             </div>
           </label>
+          <fieldset className="sm:col-span-2">
+            <legend className="field-label">
+              How should this donation be delivered?
+            </legend>
+            <div className="mt-2 grid gap-3 sm:grid-cols-2">
+              <label
+                className={`delivery-choice ${form.deliveryPreference === "self_delivery" ? "delivery-choice-active" : ""}`}
+              >
+                <input
+                  className="sr-only"
+                  type="radio"
+                  name="deliveryPreference"
+                  value="self_delivery"
+                  checked={form.deliveryPreference === "self_delivery"}
+                  onChange={update}
+                />
+                <Truck size={19} />
+                <span>
+                  <strong>I will deliver it</strong>
+                  <small>I can transport this donation myself.</small>
+                </span>
+              </label>
+              <label
+                className={`delivery-choice ${form.deliveryPreference === "organization_or_volunteer" ? "delivery-choice-active" : ""}`}
+              >
+                <input
+                  className="sr-only"
+                  type="radio"
+                  name="deliveryPreference"
+                  value="organization_or_volunteer"
+                  checked={
+                    form.deliveryPreference === "organization_or_volunteer"
+                  }
+                  onChange={update}
+                />
+                <HandHeart size={19} />
+                <span>
+                  <strong>Organization or volunteer</strong>
+                  <small>Let the network coordinate delivery.</small>
+                </span>
+              </label>
+            </div>
+          </fieldset>
           {error && (
             <p className="auth-error sm:col-span-2" role="alert">
               {error}

@@ -15,9 +15,14 @@ const acceptVolunteerRequest = async (id) => {
   return res.data;
 };
 
+const rejectVolunteerRequest = async (id) => {
+  const res = await api.post(`/delivery-requests/${id}/volunteer-reject`);
+  return res.data;
+};
+
 const expireDeliveryRequest = async (id) => {
   const res = await api.post(`/delivery-requests/${id}/expire`);
   return res.data;
 };
 
-export { listDeliveryRequests, createDeliveryRequest, acceptVolunteerRequest, expireDeliveryRequest };
+export { listDeliveryRequests, createDeliveryRequest, acceptVolunteerRequest, rejectVolunteerRequest, expireDeliveryRequest };

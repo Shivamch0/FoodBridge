@@ -1,15 +1,39 @@
-import { CheckCircle2, HandHelping, MapPin } from "lucide-react";
+import { CheckCircle2, HandHelping, MapPin, Power, X } from "lucide-react";
 import { useState } from "react";
-import { acceptVolunteerRequest } from "../api/deliveryRequest.api.js";
+import {
+  acceptVolunteerRequest,
+  rejectVolunteerRequest,
+} from "../api/deliveryRequest.api.js";
 
 export function VolunteerDashboard({
   donations,
   requests,
+  notifications = [],
+  isAvailable,
+  onAvailabilityChange,
   loading,
   onRefresh,
 }) {
   const [busyId, setBusyId] = useState("");
   const [error, setError] = useState("");
+  const [availabilityBusy, setAvailabilityBusy] = useState(false);
+  const notificationRequests = notifications
+    .filter(
+      (notification) =>
+        notification.type === "volunteer_needed" && notification.request,
+    )
+    .map((notification) => ({
+      _id: notification.request,
+      donation: { foodName: notification.message },
+      expiresAt: notification.createdAt,
+    }));
+  const requestIds = new Set(requests.map((request) => String(request._id)));
+  const visibleRequests = [
+    ...requests,
+    ...notificationRequests.filter(
+      (request) => !requestIds.has(String(request._id)),
+    ),
+  ];
   const accept = async (id) => {
     setBusyId(id);
     setError("");
@@ -25,6 +49,34 @@ export function VolunteerDashboard({
       setBusyId("");
     }
   };
+  const reject = async (id) => {
+    setBusyId(id);
+    setError("");
+    try {
+      await rejectVolunteerRequest(id);
+      await onRefresh();
+    } catch (requestError) {
+      setError(
+        requestError.response?.data?.message ||
+          "Unable to reject this delivery.",
+      );
+    } finally {
+      setBusyId("");
+    }
+  };
+  const toggleAvailability = async () => {
+    setAvailabilityBusy(true);
+    setError("");
+    try {
+      await onAvailabilityChange();
+    } catch (toggleError) {
+      setError(
+        toggleError.response?.data?.message || "Unable to update availability.",
+      );
+    } finally {
+      setAvailabilityBusy(false);
+    }
+  };
   return (
     <div className="animate-rise space-y-6">
       <section className="match-banner">
@@ -37,7 +89,22 @@ export function VolunteerDashboard({
             See open delivery requests and accept a route that you can complete.
           </p>
         </div>
-        <HandHelping size={48} className="text-[#a7d7c5]" />
+        <div className="flex flex-col items-start gap-3 sm:items-end">
+          <HandHelping size={48} className="text-[#a7d7c5]" />
+          <button
+            className={`availability-toggle ${isAvailable ? "availability-toggle-on" : ""}`}
+            onClick={toggleAvailability}
+            disabled={availabilityBusy}
+            aria-pressed={isAvailable}
+          >
+            <Power size={15} />{" "}
+            {availabilityBusy
+              ? "Updating..."
+              : isAvailable
+                ? "Available for deliveries"
+                : "Unavailable for deliveries"}
+          </button>
+        </div>
       </section>
       <section className="panel">
         <p className="eyebrow">Open requests</p>
@@ -50,12 +117,12 @@ export function VolunteerDashboard({
               Loading delivery requests...
             </p>
           )}
-          {!loading && requests.length === 0 && (
+          {!loading && visibleRequests.length === 0 && (
             <p className="text-sm text-[#718080]">
               No open delivery requests right now.
             </p>
           )}
-          {requests.map((request) => (
+          {visibleRequests.map((request) => (
             <article key={request._id} className="delivery-card">
               <div className="delivery-icon delivery-mint">
                 <MapPin size={20} />
@@ -71,19 +138,28 @@ export function VolunteerDashboard({
                     : "soon"}
                 </p>
               </div>
-              <button
-                className="button-primary"
-                disabled={busyId === request._id}
-                onClick={() => accept(request._id)}
-              >
-                {busyId === request._id ? (
-                  "Accepting..."
-                ) : (
-                  <>
-                    <CheckCircle2 size={14} /> Accept
-                  </>
-                )}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  className="button-primary"
+                  disabled={busyId === request._id}
+                  onClick={() => accept(request._id)}
+                >
+                  {busyId === request._id ? (
+                    "Working..."
+                  ) : (
+                    <>
+                      <CheckCircle2 size={14} /> Accept
+                    </>
+                  )}
+                </button>
+                <button
+                  className="button-quiet"
+                  disabled={busyId === request._id}
+                  onClick={() => reject(request._id)}
+                >
+                  <X size={14} /> Reject
+                </button>
+              </div>
             </article>
           ))}
         </div>
