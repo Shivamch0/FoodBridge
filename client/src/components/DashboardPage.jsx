@@ -65,7 +65,12 @@ export function DashboardPage({ user, onLogout }) {
     Promise.resolve().then(loadDashboardData);
   }, []);
   const pageTitle = {
-    overview: currentUser?.role === "organization" ? "Organization workspace" : currentUser?.role === "volunteer" ? "Volunteer workspace" : `Good afternoon, ${currentUser?.username || "there"}`,
+    overview:
+      currentUser?.role === "organization"
+        ? "Organization workspace"
+        : currentUser?.role === "volunteer"
+          ? "Volunteer workspace"
+          : `Good afternoon, ${currentUser?.username || "there"}`,
     donations: "Your donations",
     matching: "Matching hub",
     deliveries: "Delivery control room",
@@ -85,7 +90,10 @@ export function DashboardPage({ user, onLogout }) {
         onLogout={onLogout}
       />
       <main className="min-h-screen lg:pl-[268px]">
-        <Topbar role={`${currentUser?.role || "user"} workspace`} setMobileOpen={setMobileOpen} />
+        <Topbar
+          role={`${currentUser?.role || "user"} workspace`}
+          setMobileOpen={setMobileOpen}
+        />
         <div className="mx-auto max-w-[1540px] px-5 pb-12 pt-6 sm:px-8 lg:px-10">
           <div className="mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-end">
             <div>
@@ -94,13 +102,31 @@ export function DashboardPage({ user, onLogout }) {
                 {pageTitle}
               </h1>
             </div>
-            {currentUser?.role === "donor" && <button className="button-primary self-start md:self-auto" onClick={() => setShowDonationForm(true)}><Plus size={17} /> New donation</button>}
+            {currentUser?.role === "donor" && (
+              <button
+                className="button-primary self-start md:self-auto"
+                onClick={() => setShowDonationForm(true)}
+              >
+                <Plus size={17} /> New donation
+              </button>
+            )}
           </div>
-          {currentUser?.role === "organization" && activePage === "overview" && (
-            <OrganizationDashboard donations={dashboardData.donations} requests={dashboardData.deliveryRequests} loading={dataLoading} onRefresh={loadDashboardData} />
-          )}
+          {currentUser?.role === "organization" &&
+            activePage === "overview" && (
+              <OrganizationDashboard
+                donations={dashboardData.donations}
+                requests={dashboardData.deliveryRequests}
+                loading={dataLoading}
+                onRefresh={loadDashboardData}
+              />
+            )}
           {currentUser?.role === "volunteer" && activePage === "overview" && (
-            <VolunteerDashboard requests={dashboardData.deliveryRequests} loading={dataLoading} onRefresh={loadDashboardData} />
+            <VolunteerDashboard
+              donations={dashboardData.donations}
+              requests={dashboardData.deliveryRequests}
+              loading={dataLoading}
+              onRefresh={loadDashboardData}
+            />
           )}
           {currentUser?.role === "donor" && activePage === "overview" && (
             <Overview
@@ -134,8 +160,25 @@ export function DashboardPage({ user, onLogout }) {
               deliveryRequests={dashboardData.deliveryRequests}
             />
           )}
-          {activePage === "notifications" && <NotificationsPage notifications={dashboardData.notifications} loading={dataLoading} onRead={(id) => setDashboardData((current) => ({ ...current, notifications: current.notifications.map((notification) => notification._id === id ? { ...notification, readAt: new Date().toISOString() } : notification) }))} />}
-          {activePage === "settings" && <ProfileSettings user={currentUser} onUpdated={setCurrentUser} />}
+          {activePage === "notifications" && (
+            <NotificationsPage
+              notifications={dashboardData.notifications}
+              loading={dataLoading}
+              onRead={(id) =>
+                setDashboardData((current) => ({
+                  ...current,
+                  notifications: current.notifications.map((notification) =>
+                    notification._id === id
+                      ? { ...notification, readAt: new Date().toISOString() }
+                      : notification,
+                  ),
+                }))
+              }
+            />
+          )}
+          {activePage === "settings" && (
+            <ProfileSettings user={currentUser} onUpdated={setCurrentUser} />
+          )}
           {dataError && (
             <p className="mt-4 text-sm text-[#b96650]">{dataError}</p>
           )}

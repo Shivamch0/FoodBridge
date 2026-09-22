@@ -26,7 +26,10 @@ export function Topbar({ role, setMobileOpen }) {
           <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#d97757]" />
         </button>
         <div className="hidden h-7 w-px bg-[#dfe3d8] sm:block" />
-        <span className="role-switch"><span className="hidden sm:inline">{role}</span><span className="sm:hidden">{role.split(" ")[0]}</span></span>
+        <span className="role-switch">
+          <span className="hidden sm:inline">{role}</span>
+          <span className="sm:hidden">{role.split(" ")[0]}</span>
+        </span>
       </div>
     </header>
   );

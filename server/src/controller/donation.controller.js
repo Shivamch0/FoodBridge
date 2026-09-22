@@ -20,12 +20,11 @@ export const createDonation = asyncHandler(async (req, res) => {
     donor: req.user._id,
     status: "searching",
   });
-  const organizations = await User.find({
-    role: "organization",
-    isVerified: true,
+  const recipients = await User.find({
+    role: { $in: ["organization", "volunteer"] },
   }).select("_id");
   await createNotifications(
-    organizations.map((organization) => organization._id),
+    recipients.map((recipient) => recipient._id),
     {
       type: "new_food_available",
       message: `${donation.foodName} is available for pickup.`,

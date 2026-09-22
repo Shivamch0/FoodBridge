@@ -47,9 +47,15 @@ export function LandingPage({ onLogin, onSignup }) {
           </div>
           <div className="landing-trust">
             <div className="avatar-stack">
-              <span><Users size={14} /></span>
-              <span><HandHeart size={14} /></span>
-              <span><Truck size={14} /></span>
+              <span>
+                <Users size={14} />
+              </span>
+              <span>
+                <HandHeart size={14} />
+              </span>
+              <span>
+                <Truck size={14} />
+              </span>
             </div>
             <p>
               <strong>Join the local network</strong>

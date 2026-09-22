@@ -28,12 +28,23 @@ export function Sidebar({
   notifications = [],
   onLogout,
 }) {
-  const roleItems = user?.role === "organization"
-    ? [{ id: "overview", label: "Nearby donations" }, { id: "deliveries", label: "My deliveries" }]
-    : user?.role === "volunteer"
-      ? [{ id: "overview", label: "Open requests" }, { id: "deliveries", label: "My deliveries" }]
-      : navItems;
-  const items = [...roleItems, { id: "notifications", label: "Notifications" }, { id: "settings", label: "Settings" }];
+  const roleItems =
+    user?.role === "organization"
+      ? [
+          { id: "overview", label: "Nearby donations" },
+          { id: "deliveries", label: "My deliveries" },
+        ]
+      : user?.role === "volunteer"
+        ? [
+            { id: "overview", label: "Open requests" },
+            { id: "deliveries", label: "My deliveries" },
+          ]
+        : navItems;
+  const items = [
+    ...roleItems,
+    { id: "notifications", label: "Notifications" },
+    { id: "settings", label: "Settings" },
+  ];
   return (
     <>
       <aside
@@ -61,11 +72,18 @@ export function Sidebar({
         </div>
         <div className="mt-12 px-2">
           <p className="eyebrow">Workspace</p>
-          <p className="mt-2 text-sm font-semibold">{user?.role || "user"} operations</p>
+          <p className="mt-2 text-sm font-semibold">
+            {user?.role || "user"} operations
+          </p>
         </div>
         <nav className="mt-6 space-y-1">
           {items.map(({ id, label }) => {
-            const Icon = id === "notifications" ? Bell : id === "settings" ? Settings : icons[id];
+            const Icon =
+              id === "notifications"
+                ? Bell
+                : id === "settings"
+                  ? Settings
+                  : icons[id];
             return (
               <button
                 key={id}
@@ -77,11 +95,18 @@ export function Sidebar({
               >
                 <Icon size={18} />
                 {label}
-                {id === "notifications" && notifications.some((notification) => !notification.readAt) && (
-                  <span className="ml-auto rounded-full bg-[#e78a58] px-2 py-0.5 text-[10px] font-bold text-white">
-                    {notifications.filter((notification) => !notification.readAt).length}
-                  </span>
-                )}
+                {id === "notifications" &&
+                  notifications.some(
+                    (notification) => !notification.readAt,
+                  ) && (
+                    <span className="ml-auto rounded-full bg-[#e78a58] px-2 py-0.5 text-[10px] font-bold text-white">
+                      {
+                        notifications.filter(
+                          (notification) => !notification.readAt,
+                        ).length
+                      }
+                    </span>
+                  )}
                 {id === "matching" && (
                   <span className="ml-auto h-2 w-2 rounded-full bg-[#e78a58]" />
                 )}
