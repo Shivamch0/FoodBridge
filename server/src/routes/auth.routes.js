@@ -9,4 +9,5 @@ router.post("/login", loginValidation, loginUser);
 router.post("/logout", verifyJWT, logoutUser);
 router.post("/refresh", refreshAccessToken);
 router.get("/me", verifyJWT, getCurrentUser);
+
 export default router;

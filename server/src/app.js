@@ -6,6 +6,12 @@ import rateLimit from 'express-rate-limit';
 import { ApiError } from './utils/ApiError.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import authRoutes from './routes/auth.routes.js';
+import donationRoutes from './routes/donation.routes.js';
+import matchingRoutes from './routes/matching.routes.js';
+import deliveryRequestRoutes from './routes/deliveryRequest.routes.js';
+import deliveryRoutes from './routes/delivery.routes.js';
+import notificationRoutes from './routes/notification.routes.js';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -32,12 +38,12 @@ app.get('/api/health', (req, res) => {
 	res.status(200).json({ success: true, message: 'FoodBridge API is running' });
 });
 
-app.use('/api/auth', authLimiter, (await import('./routes/auth.routes.js')).default);
-app.use('/api/donations', (await import('./routes/donation.routes.js')).default);
-app.use('/api/matching', (await import('./routes/matching.routes.js')).default);
-app.use('/api/delivery-requests', (await import('./routes/deliveryRequest.routes.js')).default);
-app.use('/api/deliveries', (await import('./routes/delivery.routes.js')).default);
-app.use('/api/notifications', (await import('./routes/notification.routes.js')).default);
+app.use('/api/v1/auth', authLimiter, authRoutes);
+app.use('/api/v1/donations', donationRoutes);
+app.use('/api/v1/matching', matchingRoutes);
+app.use('/api/v1/delivery-requests', deliveryRequestRoutes);
+app.use('/api/v1/deliveries', deliveryRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 
 app.use((req, res, next) => {
 	next(new ApiError(404, `Route not found: ${req.method} ${req.originalUrl}`));
