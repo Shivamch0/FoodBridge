@@ -79,11 +79,12 @@ export function DashboardPage({ user, onLogout }) {
     notifications: "Notifications",
     settings: "Profile settings",
   }[activePage];
-  const updateAvailability = async () => {
+  const updateAvailability = async (nextAvailability) => {
     const response = await updateCurrentUser({
-      isAvailable: !currentUser?.isAvailable,
+      isAvailable: nextAvailability,
     });
     setCurrentUser(response.data);
+    return response.data;
   };
   return (
     <div className="min-h-screen bg-[#f5f2ea] text-[#172629]">

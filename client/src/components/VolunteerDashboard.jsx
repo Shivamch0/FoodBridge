@@ -17,6 +17,7 @@ export function VolunteerDashboard({
   const [busyId, setBusyId] = useState("");
   const [error, setError] = useState("");
   const [availabilityBusy, setAvailabilityBusy] = useState(false);
+  const [availabilityState, setAvailabilityState] = useState(isAvailable);
   const notificationRequests = notifications
     .filter(
       (notification) =>
@@ -65,11 +66,15 @@ export function VolunteerDashboard({
     }
   };
   const toggleAvailability = async () => {
+    const nextAvailability = !availabilityState;
     setAvailabilityBusy(true);
     setError("");
+    setAvailabilityState(nextAvailability);
     try {
-      await onAvailabilityChange();
+      const updatedUser = await onAvailabilityChange(nextAvailability);
+      setAvailabilityState(Boolean(updatedUser.isAvailable));
     } catch (toggleError) {
+      setAvailabilityState(!nextAvailability);
       setError(
         toggleError.response?.data?.message || "Unable to update availability.",
       );
@@ -92,15 +97,15 @@ export function VolunteerDashboard({
         <div className="flex flex-col items-start gap-3 sm:items-end">
           <HandHelping size={48} className="text-[#a7d7c5]" />
           <button
-            className={`availability-toggle ${isAvailable ? "availability-toggle-on" : ""}`}
+            className={`availability-toggle ${availabilityState ? "availability-toggle-on" : ""}`}
             onClick={toggleAvailability}
             disabled={availabilityBusy}
-            aria-pressed={isAvailable}
+            aria-pressed={availabilityState}
           >
             <Power size={15} />{" "}
             {availabilityBusy
               ? "Updating..."
-              : isAvailable
+              : availabilityState
                 ? "Available for deliveries"
                 : "Unavailable for deliveries"}
           </button>
