@@ -152,6 +152,7 @@ export function DashboardPage({ user, onLogout }) {
             <Donations
               setShowDonationForm={setShowDonationForm}
               donations={dashboardData.donations}
+              onCancel={async () => loadDashboardData()}
               loading={dataLoading}
             />
           )}

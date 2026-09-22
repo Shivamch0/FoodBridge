@@ -45,7 +45,10 @@ const createAssignment = (donation, organization, volunteer, deliveryMode) => ({
 });
 
 export const createDeliveryRequest = asyncHandler(async (req, res) => {
-  const { donationId } = req.body;
+  const { donationId, deliveryMode = "volunteer" } = req.body;
+  if (!["organization", "volunteer"].includes(deliveryMode)) {
+    throw new ApiError(400, "Choose organization transport or a volunteer");
+  }
   const donation = await FoodDonation.findById(donationId);
   if (!donation) throw new ApiError(404, "Donation not found");
   if (new Date(donation.expiresAt) <= new Date())
@@ -56,10 +59,10 @@ export const createDeliveryRequest = asyncHandler(async (req, res) => {
   // if (!organization?.isVerified)
   //   throw new ApiError(403, "Organization must be verified");
 
-  if (
-    organization.hasTransport ||
-    donation.deliveryPreference === "self_delivery"
-  ) {
+  if (deliveryMode === "organization") {
+    if (!organization.hasTransport) {
+      throw new ApiError(400, "Add transport details in Settings before choosing own transport");
+    }
     const claimed = await FoodDonation.findOneAndUpdate(
       { _id: donationId, status: { $in: ["available", "searching"] } },
       { status: "confirmed", $unset: { currentReservation: 1 } },
@@ -70,7 +73,7 @@ export const createDeliveryRequest = asyncHandler(async (req, res) => {
       donation: donationId,
       requester: organization._id,
       requesterType: "organization",
-      hasTransport: organization.hasTransport,
+      hasTransport: true,
       status: "accepted",
     });
     const assignment = await DeliveryAssignment.create(
@@ -78,9 +81,7 @@ export const createDeliveryRequest = asyncHandler(async (req, res) => {
         claimed,
         organization,
         null,
-        donation.deliveryPreference === "self_delivery"
-          ? "donor"
-          : "organization",
+        "organization",
       ),
     );
     await createNotifications([claimed.donor], {

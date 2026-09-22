@@ -5,6 +5,20 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 
 export const listNotifications = asyncHandler(async (req, res) => {
   const notifications = await Notification.find({ recipient: req.user._id })
+    .populate({
+      path: "donation",
+      select: "foodName foodType quantity unit pickupLocation expiresAt donor",
+      populate: { path: "donor", select: "username phoneNumber address location" },
+    })
+    .populate("request", "status expiresAt requester requesterType")
+    .populate({
+      path: "assignment",
+      select: "status organization volunteer pickupLocation deliveryLocation",
+      populate: [
+        { path: "organization", select: "username organizationName phoneNumber address location" },
+        { path: "volunteer", select: "username phoneNumber address location" },
+      ],
+    })
     .sort({ createdAt: -1 })
     .limit(100);
   res

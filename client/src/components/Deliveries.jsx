@@ -29,6 +29,10 @@ export function Deliveries({ deliveries, loading }) {
           ? PackageCheck
           : Truck,
     tone: statusTone(delivery.status),
+    organization: delivery.organization,
+    volunteer: delivery.volunteer,
+    pickupLocation: delivery.pickupLocation,
+    deliveryLocation: delivery.deliveryLocation,
   });
   return (
     <div className="animate-rise space-y-6">

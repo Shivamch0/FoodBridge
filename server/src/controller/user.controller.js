@@ -19,7 +19,7 @@ const createTokens = (user) => ({
 });
 
 export const registerUser = asyncHandler(async (req, res) => {
-	const { username, email, password, phoneNumber, role, organizationType, organizationName } = req.body;
+	const { username, email, password, phoneNumber, role, organizationType, organizationName, address, location } = req.body;
 	if (!username || !email || !password || !phoneNumber || !role) {
 		throw new ApiError(400, "username, email, password, phoneNumber, and role are required");
 	}
@@ -28,6 +28,12 @@ export const registerUser = asyncHandler(async (req, res) => {
 	}
 	if (role === "organization" && (!organizationType || !organizationName)) {
 		throw new ApiError(400, "Organization type and name are required");
+	}
+	if (!address?.street || !address?.city || !address?.state || !address?.pincode) {
+		throw new ApiError(400, "Complete permanent address is required");
+	}
+	if (location?.type !== "Point" || !Array.isArray(location.coordinates) || location.coordinates.length !== 2) {
+		throw new ApiError(400, "A valid live location is required");
 	}
 	if (password.length < 8) throw new ApiError(400, "Password must be at least 8 characters");
 

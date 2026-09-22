@@ -1,5 +1,6 @@
 import { ArrowUpRight } from "lucide-react";
 import { StatusPill } from "./StatusPill";
+import { LocationName } from "./LocationName";
 
 export function DeliveryCard({ delivery }) {
   const Icon = delivery.icon;
@@ -17,6 +18,49 @@ export function DeliveryCard({ delivery }) {
         <p className="mt-3 text-xs font-semibold text-[#536363]">
           {delivery.person}
         </p>
+        {(delivery.organization || delivery.volunteer) && (
+          <div className="mt-2 space-y-1 text-xs text-[#718080]">
+            {delivery.organization?.location?.coordinates && (
+              <p>
+                Organization location:{" "}
+                <LocationName
+                  coordinates={delivery.organization.location.coordinates}
+                />
+              </p>
+            )}
+            {delivery.organization && (
+              <p>
+                Organization:{" "}
+                {delivery.organization.organizationName ||
+                  delivery.organization.username}{" "}
+                · {delivery.organization.phoneNumber || "Contact available"}
+              </p>
+            )}
+            {delivery.volunteer && (
+              <p>
+                Volunteer: {delivery.volunteer.username} ·{" "}
+                {delivery.volunteer.phoneNumber || "Contact available"}
+                {delivery.volunteer.location?.coordinates ? (
+                  <>
+                    {" "}
+                    ·{" "}
+                    <LocationName
+                      coordinates={delivery.volunteer.location.coordinates}
+                    />
+                  </>
+                ) : (
+                  ""
+                )}
+              </p>
+            )}
+            {delivery.donation?.donor && (
+              <p>
+                Donor: {delivery.donation.donor.username} ·{" "}
+                {delivery.donation.donor.phoneNumber || "Contact available"}
+              </p>
+            )}
+          </div>
+        )}
       </div>
       <div className="hidden text-right sm:block">
         <p className="text-sm font-bold">{delivery.eta}</p>

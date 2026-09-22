@@ -2,16 +2,59 @@ import {
   Box,
   Clock3,
   HandHeart,
+  Trash2,
   Plus,
   Search,
   ChevronDown,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { cancelDonation } from "../api/donation.api.js";
 import { donationToRow } from "./dashboardData";
 import { Metric } from "./Metric";
 import { SectionHeader } from "./SectionHeader";
 import { StatusPill } from "./StatusPill";
+import { LocationName } from "./LocationName";
 
-export function Donations({ setShowDonationForm, donations, loading }) {
+function DonationTimer({ preparedAt, expiresAt }) {
+  const [now, setNow] = useState(() => new Date(preparedAt).getTime());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+  const remaining = Math.max(0, new Date(expiresAt).getTime() - now);
+  const total = Math.max(
+    1,
+    new Date(expiresAt).getTime() - new Date(preparedAt).getTime(),
+  );
+  const elapsed = Math.min(
+    total,
+    Math.max(0, now - new Date(preparedAt).getTime()),
+  );
+  const percent = Math.min(100, Math.round((elapsed / total) * 100));
+  const hours = Math.floor(remaining / 3600000);
+  const minutes = Math.floor((remaining % 3600000) / 60000);
+  const seconds = Math.floor((remaining % 60000) / 1000);
+  return (
+    <div className="mt-2 min-w-36">
+      <div className="h-1.5 overflow-hidden rounded-full bg-[#e5e7df]">
+        <div
+          className="h-full bg-[#d97757] transition-all"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+      <p className="mt-1 text-[10px] text-[#718080]">
+        {remaining ? `${hours}h ${minutes}m ${seconds}s remaining` : "Expired"}
+      </p>
+    </div>
+  );
+}
+
+export function Donations({
+  setShowDonationForm,
+  donations,
+  onCancel,
+  loading,
+}) {
   const activeDonations = donations.filter(
     (donation) =>
       !["cancelled", "expired", "completed"].includes(donation.status),
@@ -77,6 +120,11 @@ export function Donations({ setShowDonationForm, donations, loading }) {
               {!loading &&
                 donations.map((donation) => {
                   const row = donationToRow(donation);
+                  const canCancel = [
+                    "available",
+                    "searching",
+                    "temporarily_reserved",
+                  ].includes(donation.status);
                   return (
                     <tr
                       key={donation._id}
@@ -90,13 +138,35 @@ export function Donations({ setShowDonationForm, donations, loading }) {
                       </td>
                       <td className="py-4 text-sm">{row.quantity}</td>
                       <td className="py-4 text-sm text-[#536363]">
-                        {row.place}
+                        <LocationName
+                          coordinates={donation.pickupLocation?.coordinates}
+                        />
                       </td>
                       <td className="py-4 text-sm text-[#536363]">
                         {row.time}
                       </td>
                       <td className="py-4">
                         <StatusPill label={row.status} tone={row.tone} />
+                        {canCancel && (
+                          <DonationTimer
+                            preparedAt={donation.preparedAt}
+                            expiresAt={donation.expiresAt}
+                          />
+                        )}
+                      </td>
+                      <td className="py-4 text-right">
+                        {canCancel && (
+                          <button
+                            className="icon-button text-[#b96650]"
+                            title="Cancel donation"
+                            onClick={async () => {
+                              await cancelDonation(donation._id);
+                              await onCancel();
+                            }}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   );

@@ -4,6 +4,7 @@ import {
   LoaderCircle,
   LockKeyhole,
   Mail,
+  MapPin,
   UserRound,
 } from "lucide-react";
 import { useState } from "react";
@@ -21,11 +22,23 @@ export function AuthForm({ mode, onSubmit, error, loading }) {
     role: "donor",
     organizationName: "",
     organizationType: "community_kitchen",
+    address: {
+      street: "",
+      city: "",
+      state: "",
+      pincode: "",
+    },
   });
   const update = (event) =>
     setForm((current) => ({
       ...current,
       [event.target.name]: event.target.value,
+    }));
+
+  const updateAddress = (event) =>
+    setForm((current) => ({
+      ...current,
+      address: { ...current.address, [event.target.name]: event.target.value },
     }));
 
   const getLocation = () =>
@@ -99,6 +112,45 @@ export function AuthForm({ mode, onSubmit, error, loading }) {
       </Field>
       {isSignup && (
         <>
+          <div className="auth-form-section">
+            <p className="auth-section-title">
+              <MapPin size={15} /> Permanent address
+            </p>
+            <div className="auth-address-grid">
+              <input
+                className="auth-field"
+                name="street"
+                value={form.address.street}
+                onChange={updateAddress}
+                placeholder="Street and building"
+                required
+              />
+              <input
+                className="auth-field"
+                name="city"
+                value={form.address.city}
+                onChange={updateAddress}
+                placeholder="City"
+                required
+              />
+              <input
+                className="auth-field"
+                name="state"
+                value={form.address.state}
+                onChange={updateAddress}
+                placeholder="State"
+                required
+              />
+              <input
+                className="auth-field"
+                name="pincode"
+                value={form.address.pincode}
+                onChange={updateAddress}
+                placeholder="Pincode"
+                required
+              />
+            </div>
+          </div>
           <Field label="Phone number">
             <input
               className="auth-field"

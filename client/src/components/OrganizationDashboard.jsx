@@ -1,4 +1,4 @@
-import { Building2, MapPin, Send } from "lucide-react";
+import { Building2, HandHeart, MapPin, Send, Truck, X } from "lucide-react";
 import { useState } from "react";
 import { createDeliveryRequest } from "../api/deliveryRequest.api.js";
 
@@ -10,12 +10,18 @@ export function OrganizationDashboard({
 }) {
   const [busyId, setBusyId] = useState("");
   const [error, setError] = useState("");
-  const requestDonation = async (donationId) => {
-    setBusyId(donationId);
+  const [selectedDonation, setSelectedDonation] = useState(null);
+  const [deliveryMode, setDeliveryMode] = useState("volunteer");
+  const requestDonation = async () => {
+    setBusyId(selectedDonation._id);
     setError("");
     try {
-      await createDeliveryRequest({ donationId });
+      await createDeliveryRequest({
+        donationId: selectedDonation._id,
+        deliveryMode,
+      });
       await onRefresh();
+      setSelectedDonation(null);
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
@@ -80,7 +86,11 @@ export function OrganizationDashboard({
                 disabled={
                   busyId === donation._id || requested.has(donation._id)
                 }
-                onClick={() => requestDonation(donation._id)}
+                onClick={() => {
+                  setError("");
+                  setDeliveryMode("volunteer");
+                  setSelectedDonation(donation);
+                }}
               >
                 {requested.has(donation._id) ? (
                   "Requested"
@@ -97,6 +107,73 @@ export function OrganizationDashboard({
         </div>
         {error && <p className="auth-error mt-4">{error}</p>}
       </section>
+      {selectedDonation && (
+        <div className="modal-backdrop">
+          <div className="modal-card animate-rise">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="eyebrow">Delivery preference</p>
+                <h2 className="mt-2 font-display text-3xl tracking-[-0.04em]">
+                  How should this food reach you?
+                </h2>
+                <p className="mt-2 text-sm text-[#718080]">
+                  Choose who will transport {selectedDonation.foodName}.
+                </p>
+              </div>
+              <button
+                className="icon-button"
+                onClick={() => setSelectedDonation(null)}
+                aria-label="Close delivery preference"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                className={`delivery-choice ${deliveryMode === "organization" ? "delivery-choice-active" : ""}`}
+                onClick={() => setDeliveryMode("organization")}
+              >
+                <Truck size={19} />
+                <span>
+                  <strong>Our organization will transport</strong>
+                  <small>Use the transport saved in Settings.</small>
+                </span>
+              </button>
+              <button
+                type="button"
+                className={`delivery-choice ${deliveryMode === "volunteer" ? "delivery-choice-active" : ""}`}
+                onClick={() => setDeliveryMode("volunteer")}
+              >
+                <HandHeart size={19} />
+                <span>
+                  <strong>We need a volunteer</strong>
+                  <small>Notify an available volunteer.</small>
+                </span>
+              </button>
+            </div>
+            {error && <p className="auth-error mt-4">{error}</p>}
+            <div className="mt-7 flex justify-end gap-3">
+              <button
+                className="button-quiet"
+                onClick={() => setSelectedDonation(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="button-primary"
+                disabled={busyId === selectedDonation._id}
+                onClick={requestDonation}
+              >
+                <Send size={15} />{" "}
+                {busyId === selectedDonation._id
+                  ? "Requesting..."
+                  : "Confirm request"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

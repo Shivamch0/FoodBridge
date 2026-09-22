@@ -3,8 +3,22 @@ import { FoodDonation } from "../model/foodDonation.model.js";
 import { createNotifications } from "./notification.service.js";
 
 export const cleanupExpiredReservations = async () => {
+  const expiredDonations = await FoodDonation.find({
+    status: { $in: ["available", "searching", "temporarily_reserved"] },
+    expiresAt: { $lte: new Date() },
+  }).select("_id donor");
+  if (expiredDonations.length) {
+    await FoodDonation.updateMany(
+      { _id: { $in: expiredDonations.map((donation) => donation._id) } },
+      { status: "expired", $unset: { currentReservation: 1 } },
+    );
+    await createNotifications(expiredDonations.map((donation) => donation.donor), {
+      type: "reservation_expired",
+      message: "Your food donation expired and is no longer available.",
+    });
+  }
   const expiredRequests = await DeliveryRequest.find({ status: "pending", expiresAt: { $lte: new Date() } }).select("_id donation requester");
-  if (!expiredRequests.length) return 0;
+  if (!expiredRequests.length) return expiredDonations.length;
 
   await DeliveryRequest.updateMany({ _id: { $in: expiredRequests.map((request) => request._id) } }, { status: "expired" });
   const donationIds = [...new Set(expiredRequests.map((request) => request.donation.toString()))];

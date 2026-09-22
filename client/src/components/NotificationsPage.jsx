@@ -1,5 +1,6 @@
 import { Bell, Check } from "lucide-react";
 import { markNotificationRead } from "../api/notification.api.js";
+import { LocationName } from "./LocationName";
 import {
   acceptVolunteerRequest,
   rejectVolunteerRequest,
@@ -58,6 +59,37 @@ export function NotificationsPage({
                 <span className="mt-1 block text-xs text-[#718080]">
                   {new Date(notification.createdAt).toLocaleString()}
                 </span>
+                {notification.donation?.pickupLocation?.coordinates && (
+                  <span className="mt-1 block text-xs text-[#718080]">
+                    Pickup:{" "}
+                    <LocationName
+                      coordinates={
+                        notification.donation.pickupLocation.coordinates
+                      }
+                    />
+                  </span>
+                )}
+                {notification.donation?.donor && (
+                  <span className="mt-1 block text-xs text-[#718080]">
+                    Donor: {notification.donation.donor.username} ·{" "}
+                    {notification.donation.donor.phoneNumber ||
+                      "Contact available"}
+                  </span>
+                )}
+                {notification.assignment?.organization && (
+                  <span className="mt-1 block text-xs text-[#718080]">
+                    Organization:{" "}
+                    {notification.assignment.organization.organizationName ||
+                      notification.assignment.organization}
+                  </span>
+                )}
+                {notification.assignment?.volunteer && (
+                  <span className="mt-1 block text-xs text-[#718080]">
+                    Volunteer:{" "}
+                    {notification.assignment.volunteer.username ||
+                      notification.assignment.volunteer}
+                  </span>
+                )}
               </span>
               <div className="flex items-center gap-2">
                 {role === "volunteer" &&

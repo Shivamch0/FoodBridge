@@ -97,6 +97,7 @@ export function VolunteerDashboard({
         <div className="flex flex-col items-start gap-3 sm:items-end">
           <HandHelping size={48} className="text-[#a7d7c5]" />
           <button
+            type="button"
             className={`availability-toggle ${availabilityState ? "availability-toggle-on" : ""}`}
             onClick={toggleAvailability}
             disabled={availabilityBusy}

@@ -16,6 +16,15 @@ export const registerValidation = validate([
   body("password").isString().isLength({ min: 8, max: 128 }),
   body("phoneNumber").isString().trim().matches(/^[0-9+() -]{7,20}$/),
   body("role").isIn(["donor", "organization", "volunteer"]),
+  body("address").isObject(),
+  body("address.street").isString().trim().notEmpty(),
+  body("address.city").isString().trim().notEmpty(),
+  body("address.state").isString().trim().notEmpty(),
+  body("address.pincode").isString().trim().notEmpty(),
+  body("location").isObject(),
+  body("location.type").equals("Point"),
+  body("location.coordinates").isArray({ min: 2, max: 2 }),
+  body("location.coordinates.*").isFloat(),
 ]);
 
 export const loginValidation = validate([
