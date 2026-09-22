@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema(
       required: true,
       select: false,
     },
+    refreshToken: {
+      type: String,
+      select: false,
+    },
     phoneNumber: {
       type: String,
       required: true,

@@ -55,6 +55,8 @@ export const loginUser = asyncHandler(async (req, res) => {
 	}
 
 	const { accessToken, refreshToken } = createTokens(user);
+	user.refreshToken = refreshToken;
+	await user.save();
 	const safeUser = await User.findById(user._id).select("-password");
 	res.status(200)
 		.cookie("accessToken", accessToken, cookieOptions)
@@ -63,6 +65,7 @@ export const loginUser = asyncHandler(async (req, res) => {
 });
 
 export const logoutUser = asyncHandler(async (req, res) => {
+	await User.findByIdAndUpdate(req.user._id, { $unset: { refreshToken: 1 } });
 	res.clearCookie("accessToken", cookieOptions).clearCookie("refreshToken", cookieOptions);
 	res.status(200).json(new ApiResponse(200, null, "Logout successful"));
 });
@@ -88,8 +91,8 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
 	} catch {
 		throw new ApiError(401, "Invalid or expired refresh token");
 	}
-	const user = await User.findById(decoded._id);
-	if (!user) throw new ApiError(401, "Invalid refresh token");
+	const user = await User.findById(decoded._id).select("+refreshToken");
+	if (!user || user.refreshToken !== token) throw new ApiError(401, "Invalid refresh token");
 	res.status(200).cookie("accessToken", user.generateAccessToken(), cookieOptions)
 		.json(new ApiResponse(200, null, "Access token refreshed"));
 });
